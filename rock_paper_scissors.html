@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Sten Saks Papir</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+            color: white;
+            touch-action: manipulation;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .score-board {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .score-item {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 15px 10px;
+            border-radius: 12px;
+            font-size: 1em;
+        }
+
+        .score-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .battle-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+        }
+
+        .player-choice, .computer-choice {
+            text-align: center;
+            flex: 1;
+        }
+
+        .choice-display {
+            font-size: 4em;
+            margin: 10px 0;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .vs {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 0 10px;
+            opacity: 0.8;
+        }
+
+        .choices {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .choice-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 20px 10px;
+            font-size: 3em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .choice-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .choice-btn:active {
+            transform: scale(0.95);
+        }
+
+        .choice-label {
+            font-size: 0.35em;
+            font-weight: 600;
+            color: white;
+        }
+
+        .message {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: 600;
+            margin: 20px 0;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .message.win {
+            background: rgba(76, 175, 80, 0.3);
+            border: 2px solid rgba(76, 175, 80, 0.5);
+        }
+
+        .message.lose {
+            background: rgba(244, 67, 54, 0.3);
+            border: 2px solid rgba(244, 67, 54, 0.5);
+        }
+
+        .message.tie {
+            background: rgba(255, 193, 7, 0.3);
+            border: 2px solid rgba(255, 193, 7, 0.5);
+        }
+
+        .reset-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1em;
+            font-weight: 600;
+            background: linear-gradient(45deg, #ff6b6b, #ffa500);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            margin-top: 20px;
+        }
+
+        .reset-btn:active {
+            transform: scale(0.98);
+        }
+
+        .game-rules {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .animate-choice {
+            animation: bounce 0.6s ease;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 60%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            80% { transform: translateY(-5px); }
+        }
+
+        .countdown {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #ffa500;
+        }
+
+        @media (max-width: 320px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .choice-btn {
+                padding: 15px 5px;
+                font-size: 2.5em;
+            }
+            
+            .choice-display {
+                font-size: 3em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🪨 ✂️ 📄</h1>
+        
+        <div class="score-board">
+            <div class="score-item">
+                <div>Dig</div>
+                <div class="score-number" id="player-score">0</div>
+            </div>
+            <div class="score-item">
+                <div>Uafgjort</div>
+                <div class="score-number" id="ties">0</div>
+            </div>
+            <div class="score-item">
+                <div>Computer</div>
+                <div class="score-number" id="computer-score">0</div>
+            </div>
+        </div>
+
+        <div class="battle-area">
+            <div class="player-choice">
+                <div>Dig</div>
+                <div class="choice-display" id="player-display">❓</div>
+            </div>
+            <div class="vs">VS</div>
+            <div class="computer-choice">
+                <div>Computer</div>
+                <div class="choice-display" id="computer-display">❓</div>
+            </div>
+        </div>
+
+        <div class="message" id="message">
+            Vælg dit træk!
+        </div>
+
+        <div class="choices">
+            <button class="choice-btn" onclick="playGame('rock')">
+                🪨
+                <span class="choice-label">STEN</span>
+            </button>
+            <button class="choice-btn" onclick="playGame('scissors')">
+                ✂️
+                <span class="choice-label">SAKS</span>
+            </button>
+            <button class="choice-btn" onclick="playGame('paper')">
+                📄
+                <span class="choice-label">PAPIR</span>
+            </button>
+        </div>
+
+        <button class="reset-btn" onclick="resetGame()">
+            🔄 Nulstil Score
+        </button>
+
+        <div class="game-rules">
+            <strong>Regler:</strong><br>
+            🪨 Sten slår saks<br>
+            ✂️ Saks slår papir<br>
+            📄 Papir slår sten
+        </div>
+    </div>
+
+    <script>
+        let playerScore = 0;
+        let computerScore = 0;
+        let ties = 0;
+        let isPlaying = false;
+
+        const choices = {
+            rock: { emoji: '🪨', name: 'sten' },
+            scissors: { emoji: '✂️', name: 'saks' },
+            paper: { emoji: '📄', name: 'papir' }
+        };
+
+        const winConditions = {
+            rock: 'scissors',
+            scissors: 'paper',
+            paper: 'rock'
+        };
+
+        function playGame(playerChoice) {
+            if (isPlaying) return;
+            
+            isPlaying = true;
+            
+            // Vis spillerens valg med det samme
+            const playerDisplay = document.getElementById('player-display');
+            const computerDisplay = document.getElementById('computer-display');
+            const messageEl = document.getElementById('message');
+            
+            playerDisplay.textContent = choices[playerChoice].emoji;
+            playerDisplay.classList.add('animate-choice');
+            
+            // Start countdown for computer
+            let countdown = 3;
+            messageEl.innerHTML = `<span class="countdown">${countdown}...</span>`;
+            
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    messageEl.innerHTML = `<span class="countdown">${countdown}...</span>`;
+                } else {
+                    clearInterval(countdownInterval);
+                    
+                    // Computer gør sit valg
+                    const computerChoice = getComputerChoice();
+                    computerDisplay.textContent = choices[computerChoice].emoji;
+                    computerDisplay.classList.add('animate-choice');
+                    
+                    // Bestem vinderen
+                    const result = determineWinner(playerChoice, computerChoice);
+                    
+                    // Opdater score
+                    updateScore(result);
+                    
+                    // Vis resultat
+                    displayResult(result, playerChoice, computerChoice);
+                    
+                    // Reset efter 2 sekunder
+                    setTimeout(() => {
+                        isPlaying = false;
+                        playerDisplay.classList.remove('animate-choice');
+                        computerDisplay.classList.remove('animate-choice');
+                    }, 2000);
+                }
+            }, 1000);
+        }
+
+        function getComputerChoice() {
+            const choiceArray = Object.keys(choices);
+            const randomIndex = Math.floor(Math.random() * choiceArray.length);
+            return choiceArray[randomIndex];
+        }
+
+        function determineWinner(playerChoice, computerChoice) {
+            if (playerChoice === computerChoice) {
+                return 'tie';
+            }
+            
+            if (winConditions[playerChoice] === computerChoice) {
+                return 'win';
+            }
+            
+            return 'lose';
+        }
+
+        function updateScore(result) {
+            if (result === 'win') {
+                playerScore++;
+                document.getElementById('player-score').textContent = playerScore;
+            } else if (result === 'lose') {
+                computerScore++;
+                document.getElementById('computer-score').textContent = computerScore;
+            } else {
+                ties++;
+                document.getElementById('ties').textContent = ties;
+            }
+        }
+
+        function displayResult(result, playerChoice, computerChoice) {
+            const messageEl = document.getElementById('message');
+            const playerName = choices[playerChoice].name;
+            const computerName = choices[computerChoice].name;
+            
+            messageEl.className = 'message';
+            
+            if (result === 'win') {
+                messageEl.textContent = `🎉 Du vinder! ${playerName} slår ${computerName}`;
+                messageEl.classList.add('win');
+            } else if (result === 'lose') {
+                messageEl.textContent = `😞 Du taber! ${computerName} slår ${playerName}`;
+                messageEl.classList.add('lose');
+            } else {
+                messageEl.textContent = `🤝 Uafgjort! I valgte begge ${playerName}`;
+                messageEl.classList.add('tie');
+            }
+            
+            // Reset besked efter 3 sekunder
+            setTimeout(() => {
+                messageEl.className = 'message';
+                messageEl.textContent = 'Vælg dit træk!';
+                document.getElementById('player-display').textContent = '❓';
+                document.getElementById('computer-display').textContent = '❓';
+            }, 3000);
+        }
+
+        function resetGame() {
+            playerScore = 0;
+            computerScore = 0;
+            ties = 0;
+            
+            document.getElementById('player-score').textContent = '0';
+            document.getElementById('computer-score').textContent = '0';
+            document.getElementById('ties').textContent = '0';
+            
+            document.getElementById('player-display').textContent = '❓';
+            document.getElementById('computer-display').textContent = '❓';
+            document.getElementById('message').textContent = 'Vælg dit træk!';
+            document.getElementById('message').className = 'message';
+            
+            isPlaying = false;
+        }
+
+        // Tilføj keyboard support for desktop
+        document.addEventListener('keydown', (e) => {
+            if (isPlaying) return;
+            
+            switch(e.key.toLowerCase()) {
+                case 'r':
+                    playGame('rock');
+                    break;
+                case 's':
+                    playGame('scissors');
+                    break;
+                case 'p':
+                    playGame('paper');
+                    break;
+            }
+        });
+    </script>
+</body>
+</html>

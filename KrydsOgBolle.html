@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kryds og Bolle mod Computer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .game-container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-mode-selector {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .mode-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .mode-btn.active {
+            background: rgba(255, 215, 0, 0.8);
+            color: #333;
+            border-color: #ffd700;
+        }
+
+        .difficulty-selector {
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .difficulty-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 5px;
+            font-size: 0.9em;
+        }
+
+        .difficulty-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .difficulty-btn.active {
+            background: rgba(255, 107, 107, 0.8);
+            border-color: #ff6b6b;
+        }
+
+        .game-info {
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+
+        .current-player {
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+            margin: 20px auto;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 15px;
+        }
+
+        .cell {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 10px;
+            font-size: 2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #333;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .cell:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .cell:active {
+            transform: translateY(0);
+        }
+
+        .cell.x {
+            color: #e74c3c;
+        }
+
+        .cell.o {
+            color: #3498db;
+        }
+
+        .winning-cell {
+            background: rgba(255, 215, 0, 0.8) !important;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .reset-btn {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #333;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .reset-btn:hover {
+            background: linear-gradient(45deg, #ffed4e, #ffd700);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 15px;
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .score-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .game-message {
+            font-size: 1.3em;
+            margin: 15px 0;
+            min-height: 30px;
+            font-weight: bold;
+        }
+
+        .winner-message {
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            animation: celebration 0.5s ease-in-out;
+        }
+
+        @keyframes celebration {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .draw-message {
+            color: #ff9800;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .thinking {
+            color: #87ceeb;
+            animation: thinking 1s infinite;
+        }
+
+        @keyframes thinking {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🤖 Kryds og Bolle 🎮</h1>
+        
+        <div class="game-mode-selector">
+            <button class="mode-btn active" onclick="setGameMode('human')">👥 2 Spillere</button>
+            <button class="mode-btn" onclick="setGameMode('computer')">🤖 Mod Computer</button>
+        </div>
+
+        <div class="difficulty-selector" id="difficultySelector">
+            <span style="margin-right: 10px;">Sværhed:</span>
+            <button class="difficulty-btn active" onclick="setDifficulty('easy')">😊 Let</button>
+            <button class="difficulty-btn" onclick="setDifficulty('medium')">🤔 Medium</button>
+            <button class="difficulty-btn" onclick="setDifficulty('hard')">😤 Svær</button>
+        </div>
+        
+        <div class="score-board">
+            <div class="score-item">
+                <div class="score-label" id="player1Label">Spiller X</div>
+                <div class="score-value" id="scoreX">0</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">Uafgjort</div>
+                <div class="score-value" id="scoreDraw">0</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label" id="player2Label">Spiller O</div>
+                <div class="score-value" id="scoreO">0</div>
+            </div>
+        </div>
+
+        <div class="game-info">
+            <span>Nuværende spiller: </span>
+            <span class="current-player" id="currentPlayer">X</span>
+        </div>
+
+        <div class="game-message" id="gameMessage"></div>
+
+        <div class="game-board" id="gameBoard">
+            <button class="cell" data-index="0"></button>
+            <button class="cell" data-index="1"></button>
+            <button class="cell" data-index="2"></button>
+            <button class="cell" data-index="3"></button>
+            <button class="cell" data-index="4"></button>
+            <button class="cell" data-index="5"></button>
+            <button class="cell" data-index="6"></button>
+            <button class="cell" data-index="7"></button>
+            <button class="cell" data-index="8"></button>
+        </div>
+
+        <button class="reset-btn" onclick="resetGame()">🔄 Nyt Spil</button>
+    </div>
+
+    <script>
+        let board = ['', '', '', '', '', '', '', '', ''];
+        let currentPlayer = 'X';
+        let gameActive = true;
+        let gameMode = 'human'; // 'human' or 'computer'
+        let difficulty = 'easy'; // 'easy', 'medium', 'hard'
+        let humanPlayer = 'X';
+        let computerPlayer = 'O';
+        
+        // Score tracking
+        let scores = {
+            X: 0,
+            O: 0,
+            draw: 0
+        };
+
+        const winningConditions = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6]
+        ];
+
+        function setGameMode(mode) {
+            gameMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const difficultySelector = document.getElementById('difficultySelector');
+            const player1Label = document.getElementById('player1Label');
+            const player2Label = document.getElementById('player2Label');
+            
+            if (mode === 'computer') {
+                difficultySelector.style.display = 'block';
+                player1Label.textContent = 'Du (X)';
+                player2Label.textContent = 'Computer (O)';
+            } else {
+                difficultySelector.style.display = 'none';
+                player1Label.textContent = 'Spiller X';
+                player2Label.textContent = 'Spiller O';
+            }
+            
+            resetGame();
+        }
+
+        function setDifficulty(level) {
+            difficulty = level;
+            document.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            resetGame();
+        }
+
+        function handleCellClick(clickedCellEvent) {
+            const clickedCell = clickedCellEvent.target;
+            const clickedCellIndex = parseInt(clickedCell.getAttribute('data-index'));
+
+            if (board[clickedCellIndex] !== '' || !gameActive) {
+                return;
+            }
+
+            // Human move
+            handleCellPlayed(clickedCell, clickedCellIndex);
+            handleResultValidation();
+
+            // Computer move (if game is still active and it's computer mode)
+            if (gameMode === 'computer' && gameActive && currentPlayer === computerPlayer) {
+                document.getElementById('gameMessage').innerHTML = '🤖 Computer tænker...';
+                document.getElementById('gameMessage').classList.add('thinking');
+                
+                setTimeout(() => {
+                    makeComputerMove();
+                    document.getElementById('gameMessage').classList.remove('thinking');
+                }, 500 + Math.random() * 1000); // Random delay for realism
+            }
+        }
+
+        function handleCellPlayed(clickedCell, clickedCellIndex) {
+            board[clickedCellIndex] = currentPlayer;
+            clickedCell.innerHTML = currentPlayer;
+            clickedCell.classList.add(currentPlayer.toLowerCase());
+        }
+
+        function makeComputerMove() {
+            if (!gameActive) return;
+
+            let move;
+            
+            switch (difficulty) {
+                case 'easy':
+                    move = getRandomMove();
+                    break;
+                case 'medium':
+                    move = Math.random() < 0.5 ? getBestMove() : getRandomMove();
+                    break;
+                case 'hard':
+                    move = getBestMove();
+                    break;
+            }
+
+            if (move !== -1) {
+                const cell = document.querySelector(`[data-index="${move}"]`);
+                handleCellPlayed(cell, move);
+                handleResultValidation();
+            }
+        }
+
+        function getRandomMove() {
+            const availableMoves = [];
+            for (let i = 0; i < 9; i++) {
+                if (board[i] === '') {
+                    availableMoves.push(i);
+                }
+            }
+            return availableMoves.length > 0 ? availableMoves[Math.floor(Math.random() * availableMoves.length)] : -1;
+        }
+
+        function getBestMove() {
+            // First, try to win
+            for (let i = 0; i < 9; i++) {
+                if (board[i] === '') {
+                    board[i] = computerPlayer;
+                    if (checkWinner(board) === computerPlayer) {
+                        board[i] = '';
+                        return i;
+                    }
+                    board[i] = '';
+                }
+            }
+
+            // Then, try to block human from winning
+            for (let i = 0; i < 9; i++) {
+                if (board[i] === '') {
+                    board[i] = humanPlayer;
+                    if (checkWinner(board) === humanPlayer) {
+                        board[i] = '';
+                        return i;
+                    }
+                    board[i] = '';
+                }
+            }
+
+            // Take center if available
+            if (board[4] === '') {
+                return 4;
+            }
+
+            // Take corners
+            const corners = [0, 2, 6, 8];
+            const availableCorners = corners.filter(i => board[i] === '');
+            if (availableCorners.length > 0) {
+                return availableCorners[Math.floor(Math.random() * availableCorners.length)];
+            }
+
+            // Take any available move
+            return getRandomMove();
+        }
+
+        function checkWinner(testBoard) {
+            for (let i = 0; i < winningConditions.length; i++) {
+                const [a, b, c] = winningConditions[i];
+                if (testBoard[a] && testBoard[a] === testBoard[b] && testBoard[a] === testBoard[c]) {
+                    return testBoard[a];
+                }
+            }
+            return null;
+        }
+
+        function handleResultValidation() {
+            let roundWon = false;
+            let winningCombination = [];
+
+            for (let i = 0; i <= 7; i++) {
+                const winCondition = winningConditions[i];
+                let a = board[winCondition[0]];
+                let b = board[winCondition[1]];
+                let c = board[winCondition[2]];
+
+                if (a === '' || b === '' || c === '') {
+                    continue;
+                }
+
+                if (a === b && b === c) {
+                    roundWon = true;
+                    winningCombination = winCondition;
+                    break;
+                }
+            }
+
+            if (roundWon) {
+                let winMessage;
+                if (gameMode === 'computer') {
+                    winMessage = currentPlayer === humanPlayer ? '🎉 Du vinder! 🎉' : '🤖 Computer vinder! 🤖';
+                } else {
+                    winMessage = `🎉 Spiller ${currentPlayer} vinder! 🎉`;
+                }
+                
+                document.getElementById('gameMessage').innerHTML = winMessage;
+                document.getElementById('gameMessage').classList.add('winner-message');
+                
+                // Highlight winning cells
+                winningCombination.forEach(index => {
+                    document.querySelector(`[data-index="${index}"]`).classList.add('winning-cell');
+                });
+                
+                // Update score
+                scores[currentPlayer]++;
+                updateScoreDisplay();
+                
+                gameActive = false;
+                return;
+            }
+
+            let roundDraw = !board.includes('');
+            if (roundDraw) {
+                document.getElementById('gameMessage').innerHTML = '🤝 Uafgjort! 🤝';
+                document.getElementById('gameMessage').classList.add('draw-message');
+                scores.draw++;
+                updateScoreDisplay();
+                gameActive = false;
+                return;
+            }
+
+            handlePlayerChange();
+        }
+
+        function handlePlayerChange() {
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            document.getElementById('currentPlayer').innerHTML = currentPlayer;
+        }
+
+        function updateScoreDisplay() {
+            document.getElementById('scoreX').innerHTML = scores.X;
+            document.getElementById('scoreO').innerHTML = scores.O;
+            document.getElementById('scoreDraw').innerHTML = scores.draw;
+        }
+
+        function resetGame() {
+            gameActive = true;
+            currentPlayer = 'X';
+            board = ['', '', '', '', '', '', '', '', ''];
+            
+            document.getElementById('currentPlayer').innerHTML = currentPlayer;
+            document.getElementById('gameMessage').innerHTML = '';
+            document.getElementById('gameMessage').classList.remove('winner-message', 'draw-message', 'thinking');
+            
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.innerHTML = '';
+                cell.classList.remove('x', 'o', 'winning-cell');
+            });
+        }
+
+        // Add event listeners to all cells
+        document.querySelectorAll('.cell').forEach(cell => {
+            cell.addEventListener('click', handleCellClick);
+        });
+
+        // Initialize score display
+        updateScoreDisplay();
+    </script>
+</body>
+</html>

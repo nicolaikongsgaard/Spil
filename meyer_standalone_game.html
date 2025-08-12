@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meyer Dice Game</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .game-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 8px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-primary { 
+            background: linear-gradient(45deg, #3498db, #2980b9); 
+            color: white; 
+        }
+        
+        .btn-success { 
+            background: linear-gradient(45deg, #2ecc71, #27ae60); 
+            color: white; 
+        }
+        
+        .btn-danger { 
+            background: linear-gradient(45deg, #e74c3c, #c0392b); 
+            color: white; 
+        }
+        
+        .btn-warning { 
+            background: linear-gradient(45deg, #f39c12, #e67e22); 
+            color: white; 
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            max-width: 300px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .player-card {
+            background: #f8f9fa;
+            border: 3px solid #dee2e6;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .player-card.active {
+            border-color: #3498db;
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            transform: scale(1.05);
+        }
+        
+        .player-card.eliminated {
+            background: #f5f5f5;
+            color: #6c757d;
+            opacity: 0.7;
+        }
+        
+        .player-card h3 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+        
+        .hearts {
+            font-size: 1.5em;
+            margin: 10px 0;
+        }
+        
+        .dice-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 25px 0;
+        }
+        
+        .dice {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border: 3px solid #34495e;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #2c3e50;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            animation: rollAnimation 0.5s ease-in-out;
+        }
+        
+        @keyframes rollAnimation {
+            0% { transform: rotateX(0deg) rotateY(0deg); }
+            50% { transform: rotateX(180deg) rotateY(180deg); }
+            100% { transform: rotateX(360deg) rotateY(360deg); }
+        }
+        
+        .game-log {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 250px;
+            overflow-y: auto;
+            margin-bottom: 25px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .game-log div {
+            margin-bottom: 8px;
+            padding: 5px;
+            border-left: 3px solid #3498db;
+            padding-left: 10px;
+        }
+        
+        .text-center { 
+            text-align: center; 
+        }
+        
+        .hidden { 
+            display: none; 
+        }
+        
+        .rules-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .rules-toggle {
+            background: none;
+            border: none;
+            color: #3498db;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: underline;
+        }
+        
+        .setup-card {
+            background: linear-gradient(135deg, #fff, #f8f9fa);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .game-section {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1>🎲 Meyer Dice Game 🎲</h1>
+            <p>The Ultimate Bluffing Game!</p>
+        </div>
+
+        <div class="content">
+            <!-- Setup Screen -->
+            <div id="setupScreen" class="setup-card">
+                <h2>🎮 Setup Your Game</h2>
+                <div class="form-group">
+                    <label>👥 Number of Players (2-6)</label>
+                    <input type="number" id="numPlayers" min="2" max="6" value="3">
+                </div>
+                <div class="form-group">
+                    <label>❤️ Lives per Player (1-5)</label>
+                    <input type="number" id="numLives" min="1" max="5" value="3">
+                </div>
+                <button class="btn btn-success" onclick="startGame()">🚀 Start Game</button>
+                
+                <div class="rules-section">
+                    <button class="rules-toggle" onclick="toggleRules()">📖 Show/Hide Rules</button>
+                    <div id="rulesContent" class="hidden" style="margin-top: 15px;">
+                        <h4>🎯 How to Play Meyer:</h4>
+                        <p><strong>Objective:</strong> Be the last player with lives remaining!</p>
+                        
+                        <h5>🎲 Dice Values (Highest to Lowest):</h5>
+                        <ul>
+                            <li><strong>Meyer (21)</strong> - The highest possible roll</li>
+                            <li><strong>Little Meyer (31)</strong> - Second highest</li>
+                            <li><strong>Doubles:</strong> 66, 55, 44, 33, 22, 11</li>
+                            <li><strong>Regular:</strong> 65, 64, 63, 62, 61, 54, 53, 52, 51, 43, 42, 41, 32</li>
+                        </ul>
+                        
+                        <h5>🎮 Game Flow:</h5>
+                        <ol>
+                            <li>Roll dice secretly and declare a value</li>
+                            <li>Next player can <strong>Believe</strong> or <strong>Challenge</strong></li>
+                            <li>You must declare equal or higher than previous claim</li>
+                            <li>You can bluff about your actual roll!</li>
+                            <li>Wrong challenge = lose a life</li>
+                            <li>Successful challenge = bluffer loses a life</li>
+                            <li>If someone claims Meyer, next player MUST challenge</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Screen -->
+            <div id="gameScreen" class="hidden game-section">
+                <div class="players-grid" id="playersGrid"></div>
+                
+                <div class="game-log" id="gameLog">
+                    <div>🎲 Welcome to Meyer! Game starting...</div>
+                </div>
+
+                <!-- Roll Phase -->
+                <div id="rollPhase" class="text-center">
+                    <h3>Player <span id="currentPlayerNum">1</span>'s Turn</h3>
+                    <p id="rollInstructions">Click to roll the dice!</p>
+                    <button class="btn btn-primary" onclick="rollDice()">🎲 Roll Dice</button>
+                </div>
+
+                <!-- Declare Phase -->
+                <div id="declarePhase" class="text-center hidden">
+                    <h3>Player <span id="declarePlayerNum">1</span> - Your Secret Roll</h3>
+                    <div class="dice-container">
+                        <div class="dice" id="die1">1</div>
+                        <div class="dice" id="die2">1</div>
+                    </div>
+                    <p><strong>Your actual roll: <span id="actualValue">11</span></strong></p>
+                    <p id="previousClaimInfo"></p>
+                    <div class="form-group">
+                        <label>What do you want to declare?</label>
+                        <select id="declarationSelect"></select>
+                    </div>
+                    <button class="btn btn-success" onclick="makeDeclaration()">📢 Make Declaration</button>
+                </div>
+
+                <!-- Challenge Phase -->
+                <div id="challengePhase" class="text-center hidden">
+                    <h3>Player <span id="challengePlayerNum">1</span>'s Decision</h3>
+                    <p>Player <span id="claimerNum">1</span> claims: <strong><span id="claimedValue">65</span></strong></p>
+                    
+                    <div id="normalChallenge">
+                        <p>Do you believe this claim?</p>
+                        <button class="btn btn-success" onclick="believeClaim()">✅ I Believe It</button>
+                        <button class="btn btn-danger" onclick="challengeClaim()">🚫 Challenge!</button>
+                    </div>
+
+                    <div id="meyerChallenge" class="hidden">
+                        <p style="color: #e74c3c; font-weight: bold;">⚠️ Meyer was claimed! You MUST challenge!</p>
+                        <button class="btn btn-danger" onclick="challengeClaim()">🚫 Challenge Meyer!</button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; text-align: center;">
+                    <button class="btn btn-warning" onclick="restartGame()">🔄 New Game</button>
+                </div>
+            </div>
+
+            <!-- Game Over Screen -->
+            <div id="gameOverScreen" class="text-center hidden">
+                <h2>🎉 Game Over! 🎉</h2>
+                <h3>🏆 Winner: Player <span id="winnerName">1</span>! 🏆</h3>
+                <button class="btn btn-success" onclick="restartGame()">🎮 Play Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state variables
+        let gameState = 'setup';
+        let players = [];
+        let currentPlayerIndex = 0;
+        let currentPhase = 'roll';
+        let lastClaimedValue = '';
+        let lastActualRoll = { die1: 1, die2: 1 };
+        let gameLog = [];
+
+        // Dice values from highest to lowest
+        const diceValues = [
+            'Meyer', 'Little Meyer', '66', '55', '44', '33', '22', '11',
+            '65', '64', '63', '62', '61', '54', '53', '52', '51', '43', '42', '41', '32'
+        ];
+
+        function toggleRules() {
+            const rulesContent = document.getElementById('rulesContent');
+            rulesContent.classList.toggle('hidden');
+        }
+
+        function startGame() {
+            const numPlayers = Math.max(2, Math.min(6, parseInt(document.getElementById('numPlayers').value) || 3));
+            const numLives = Math.max(1, Math.min(5, parseInt(document.getElementById('numLives').value) || 3));
+            
+            // Initialize players
+            players = [];
+            for (let i = 0; i < numPlayers; i++) {
+                players.push({ lives: numLives, name: `Player ${i + 1}` });
+            }
+            
+            // Reset game state
+            gameState = 'playing';
+            currentPlayerIndex = 0;
+            currentPhase = 'roll';
+            lastClaimedValue = '';
+            gameLog = [];
+            
+            // Switch to game screen
+            showScreen('gameScreen');
+            updatePlayersDisplay();
+            updateGameLog('🎲 Game started! ' + players[0].name + ' begins the first round.');
+            showPhase('rollPhase');
+            updateCurrentPlayer();
+        }
+
+        function showScreen(screenId) {
+            const screens = ['setupScreen', 'gameScreen', 'gameOverScreen'];
+            screens.forEach(screen => {
+                document.getElementById(screen).classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+        }
+
+        function showPhase(phaseId) {
+            const phases = ['rollPhase', 'declarePhase', 'challengePhase'];
+            phases.forEach(phase => {
+                document.getElementById(phase).classList.add('hidden');
+            });
+            document.getElementById(phaseId).classList.remove('hidden');
+        }
+
+        function updatePlayersDisplay() {
+            const playersGrid = document.getElementById('playersGrid');
+            playersGrid.innerHTML = '';
+            
+            players.forEach((player, index) => {
+                const playerCard = document.createElement('div');
+                playerCard.className = 'player-card';
+                if (index === currentPlayerIndex) playerCard.classList.add('active');
+                if (player.lives <= 0) playerCard.classList.add('eliminated');
+                
+                const hearts = '❤️'.repeat(player.lives);
+                const status = player.lives <= 0 ? '<div style="color: #e74c3c;">💀 Eliminated</div>' : '';
+                
+                playerCard.innerHTML = `
+                    <h3>${player.name}</h3>
+                    <div class="hearts">${hearts}</div>
+                    ${status}
+                `;
+                playersGrid.appendChild(playerCard);
+            });
+        }
+
+        function updateCurrentPlayer() {
+            document.getElementById('currentPlayerNum').textContent = currentPlayerIndex + 1;
+            document.getElementById('declarePlayerNum').textContent = currentPlayerIndex + 1;
+            document.getElementById('challengePlayerNum').textContent = currentPlayerIndex + 1;
+            
+            // Update roll instructions
+            const instructions = lastClaimedValue 
+                ? `Previous claim: ${lastClaimedValue}. Roll to see what you can declare!`
+                : 'Start the round by rolling the dice!';
+            document.getElementById('rollInstructions').textContent = instructions;
+        }
+
+        function rollDice() {
+            const die1 = Math.floor(Math.random() * 6) + 1;
+            const die2 = Math.floor(Math.random() * 6) + 1;
+            
+            lastActualRoll = { die1, die2 };
+            
+            // Animate dice roll
+            document.getElementById('die1').style.animation = 'rollAnimation 0.5s ease-in-out';
+            document.getElementById('die2').style.animation = 'rollAnimation 0.5s ease-in-out';
+            
+            setTimeout(() => {
+                document.getElementById('die1').textContent = die1;
+                document.getElementById('die2').textContent = die2;
+                document.getElementById('actualValue').textContent = getDiceValueText(die1, die2);
+                
+                // Reset animation
+                document.getElementById('die1').style.animation = '';
+                document.getElementById('die2').style.animation = '';
+                
+                updateDeclarationOptions();
+                showPhase('declarePhase');
+            }, 500);
+        }
+
+        function getDiceValueText(die1, die2) {
+            const higher = Math.max(die1, die2);
+            const lower = Math.min(die1, die2);
+            
+            if (higher === 2 && lower === 1) return 'Meyer';
+            if (higher === 3 && lower === 1) return 'Little Meyer';
+            if (higher === lower) return `${higher}${higher}`;
+            
+            return `${higher}${lower}`;
+        }
+
+        function updateDeclarationOptions() {
+            const select = document.getElementById('declarationSelect');
+            select.innerHTML = '';
+            
+            const availableDeclarations = getAvailableDeclarations();
+            availableDeclarations.forEach(value => {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = value;
+                select.appendChild(option);
+            });
+            
+            // Update previous claim info
+            const prevClaimInfo = document.getElementById('previousClaimInfo');
+            if (lastClaimedValue) {
+                prevClaimInfo.innerHTML = `<strong>Previous claim:</strong> ${lastClaimedValue}<br>You must declare this or higher (but you can bluff!)`;
+            } else {
+                prevClaimInfo.innerHTML = 'First player - you can declare any value!';
+            }
+        }
+
+        function getAvailableDeclarations() {
+            if (!lastClaimedValue) {
+                return diceValues.slice();
+            }
+            
+            const lastClaimedIndex = diceValues.indexOf(lastClaimedValue);
+            return diceValues.slice(0, lastClaimedIndex + 1);
+        }
+
+        function makeDeclaration() {
+            const declaration = document.getElementById('declarationSelect').value;
+            lastClaimedValue = declaration;
+            
+            updateGameLog(`${players[currentPlayerIndex].name} declares: ${declaration}`);
+            
+            // Move to next player
+            moveToNextPlayer();
+            updatePlayersDisplay();
+            
+            // Check if Meyer was declared (must be challenged)
+            if (declaration === 'Meyer') {
+                document.getElementById('normalChallenge').classList.add('hidden');
+                document.getElementById('meyerChallenge').classList.remove('hidden');
+            } else {
+                document.getElementById('normalChallenge').classList.remove('hidden');
+                document.getElementById('meyerChallenge').classList.add('hidden');
+            }
+            
+            // Update challenge phase
+            document.getElementById('claimerNum').textContent = getPreviousPlayerIndex() + 1;
+            document.getElementById('claimedValue').textContent = declaration;
+            
+            showPhase('challengePhase');
+            updateCurrentPlayer();
+        }
+
+        function believeClaim() {
+            updateGameLog(`${players[currentPlayerIndex].name} believes the claim and continues.`);
+            showPhase('rollPhase');
+            updateCurrentPlayer();
+        }
+
+        function challengeClaim() {
+            const challengerIndex = currentPlayerIndex;
+            const claimerIndex = getPreviousPlayerIndex();
+            
+            const actualValue = getDiceValueText(lastActualRoll.die1, lastActualRoll.die2);
+            const actualRank = diceValues.indexOf(actualValue);
+            const claimedRank = diceValues.indexOf(lastClaimedValue);
+            
+            updateGameLog(`${players[challengerIndex].name} challenges ${players[claimerIndex].name}!`);
+            updateGameLog(`The actual roll was: ${actualValue}`);
+            
+            if (actualRank <= claimedRank) { // Claim was true or better
+                players[challengerIndex].lives--;
+                updateGameLog(`❌ Challenge failed! ${players[challengerIndex].name} loses a life.`);
+            } else { // Claim was false
+                players[claimerIndex].lives--;
+                updateGameLog(`✅ Challenge successful! ${players[claimerIndex].name} was bluffing and loses a life.`);
+            }
+            
+            // Check for game over
+            const alivePlayers = players.filter(p => p.lives > 0);
+            if (alivePlayers.length <= 1) {
+                gameState = 'gameOver';
+                const winner = players.find(p => p.lives > 0);
+                document.getElementById('winnerName').textContent = winner.name;
+                showScreen('gameOverScreen');
+                return;
+            }
+            
+            // Continue game - start new round
+            lastClaimedValue = '';
+            currentPlayerIndex = challengerIndex;
+            
+            // Skip eliminated players
+            while (players[currentPlayerIndex].lives <= 0) {
+                moveToNextPlayer();
+            }
+            
+            updatePlayersDisplay();
+            showPhase('rollPhase');
+            updateCurrentPlayer();
+        }
+
+        function moveToNextPlayer() {
+            do {
+                currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+            } while (players[currentPlayerIndex].lives <= 0);
+        }
+
+        function getPreviousPlayerIndex() {
+            let prevIndex = currentPlayerIndex;
+            do {
+                prevIndex = (prevIndex - 1 + players.length) % players.length;
+            } while (players[prevIndex].lives <= 0);
+            return prevIndex;
+        }
+
+        function updateGameLog(message) {
+            gameLog.push(message);
+            const logElement = document.getElementById('gameLog');
+            
+            // Keep only last 15 messages
+            if (gameLog.length > 15) {
+                gameLog = gameLog.slice(-15);
+            }
+            
+            logElement.innerHTML = gameLog.map(msg => `<div>${msg}</div>`).join('');
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function restartGame() {
+            gameState = 'setup';
+            players = [];
+            gameLog = [];
+            lastClaimedValue = '';
+            currentPlayerIndex = 0;
+            document.getElementById('numPlayers').value = '3';
+            document.getElementById('numLives').value = '3';
+            showScreen('setupScreen');
+        }
+    </script>
+</body>
+</html>

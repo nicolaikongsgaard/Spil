@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tetris</title>
+    <style>
+    body {
+    background: #1e1e2e;
+    color: white;
+    font-family: sans-serif;
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+}
+#tetris-container {
+    display: flex;
+    gap: 20px;
+}
+#left-panel, #right-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+canvas {
+    background: #11111b;
+    border: 2px solid #45475a;
+}
+button {
+    padding: 10px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.hidden {
+    display: none;
+}
+
+    </style>
+</head>
+<body>
+    <div id="tetris-container">
+        <div id="left-panel">
+            <h1>TETRIS</h1>
+            <div class="info-block"><label>Score</label><div id="score">0</div></div>
+            <div class="info-block"><label>Level</label><div id="level">1</div></div>
+            <div class="info-block"><label>Lines</label><div id="lines">0</div></div>
+            <button id="pause-btn">Pause</button>
+            <button id="newgame-btn">New Game</button>
+            <div id="game-over" class="hidden">GAME OVER</div>
+        </div>
+        <canvas id="game-canvas" width="300" height="600"></canvas>
+        <div id="right-panel">
+            <div class="next-block">
+                <label>Next</label>
+                <canvas id="next-canvas" width="120" height="120"></canvas>
+            </div>
+            <div class="controls">
+                <label>Controls</label>
+                <p>← → Move</p>
+                <p>↓ Soft Drop</p>
+                <p>↑ Rotate</p>
+                <p>Space Hard Drop</p>
+                <p>P Pause</p>
+            </div>
+        </div>
+    </div>
+    <script>
+    
+// Enkel Tetris-spillogik i JavaScript (baseret på din WPF-logik)
+const canvas = document.getElementById("game-canvas");
+const ctx = canvas.getContext("2d");
+const nextCanvas = document.getElementById("next-canvas");
+const nextCtx = nextCanvas.getContext("2d");
+
+const COLS = 10, ROWS = 20, SIZE = 30;
+canvas.width = COLS * SIZE;
+canvas.height = ROWS * SIZE;
+
+const COLORS = ["", "cyan", "yellow", "purple", "green", "red", "blue", "orange"];
+const SHAPES = [
+  [],
+  [[1,1,1,1]], [[1,1],[1,1]], [[0,1,0],[1,1,1]], [[0,1,1],[1,1,0]],
+  [[1,1,0],[0,1,1]], [[1,0,0],[1,1,1]], [[0,0,1],[1,1,1]]
+];
+
+let board = Array.from({length: ROWS}, () => Array(COLS).fill(0));
+let current, next, interval, dropTime = 1000;
+let score = 0, level = 1, lines = 0, paused = false, gameOver = false;
+
+function newPiece() {
+  const id = Math.floor(Math.random() * 7) + 1;
+  const shape = SHAPES[id].map(row => [...row]);
+  return {id, shape, x: 3, y: 0};
+}
+
+function drawCell(x, y, colorId, ctxOverride = ctx, size = SIZE) {
+  ctxOverride.fillStyle = COLORS[colorId];
+  ctxOverride.fillRect(x * size, y * size, size - 1, size - 1);
+  ctxOverride.strokeStyle = "black";
+  ctxOverride.strokeRect(x * size, y * size, size - 1, size - 1);
+}
+
+function drawBoard() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  board.forEach((row, y) => row.forEach((val, x) => val && drawCell(x, y, val)));
+  current.shape.forEach((row, dy) => row.forEach((val, dx) => {
+    if (val) drawCell(current.x + dx, current.y + dy, current.id);
+  }));
+}
+
+function drawNext() {
+  nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
+  next.shape.forEach((row, y) => row.forEach((val, x) => {
+    if (val) drawCell(x + 1, y + 1, next.id, nextCtx, 25);
+  }));
+}
+
+function merge() {
+  current.shape.forEach((row, dy) => row.forEach((val, dx) => {
+    if (val) board[current.y + dy][current.x + dx] = current.id;
+  }));
+}
+
+function collide(x, y, shape) {
+  return shape.some((row, dy) => row.some((val, dx) => {
+    const newX = x + dx, newY = y + dy;
+    return val && (newX < 0 || newX >= COLS || newY >= ROWS || board[newY]?.[newX]);
+  }));
+}
+
+function rotate(shape) {
+  return shape[0].map((_, i) => shape.map(row => row[i]).reverse());
+}
+
+function clearLines() {
+  let count = 0;
+  board = board.filter(row => {
+    if (row.every(cell => cell)) {
+      count++;
+      return false;
+    }
+    return true;
+  });
+  while (board.length < ROWS) board.unshift(Array(COLS).fill(0));
+  if (count) {
+    lines += count;
+    score += [0,100,300,500,800][count] * level;
+    level = Math.floor(lines / 10) + 1;
+    dropTime = Math.max(100, 1000 - (level - 1) * 100);
+    document.getElementById("score").textContent = score;
+    document.getElementById("level").textContent = level;
+    document.getElementById("lines").textContent = lines;
+  }
+}
+
+function drop() {
+  if (paused || gameOver) return;
+  if (!collide(current.x, current.y + 1, current.shape)) {
+    current.y++;
+  } else {
+    merge();
+    clearLines();
+    current = next;
+    next = newPiece();
+    if (collide(current.x, current.y, current.shape)) {
+      gameOver = true;
+      clearInterval(interval);
+      document.getElementById("game-over").classList.remove("hidden");
+    }
+  }
+  drawBoard();
+  drawNext();
+}
+
+function move(dir) {
+  if (!collide(current.x + dir, current.y, current.shape)) {
+    current.x += dir;
+    drawBoard();
+  }
+}
+
+function softDrop() {
+  if (!collide(current.x, current.y + 1, current.shape)) {
+    current.y++;
+    drawBoard();
+  }
+}
+
+function hardDrop() {
+  while (!collide(current.x, current.y + 1, current.shape)) current.y++;
+  drop();
+}
+
+function doRotate() {
+  const rotated = rotate(current.shape);
+  if (!collide(current.x, current.y, rotated)) {
+    current.shape = rotated;
+    drawBoard();
+  }
+}
+
+function startGame() {
+  board = Array.from({length: ROWS}, () => Array(COLS).fill(0));
+  score = 0; level = 1; lines = 0; gameOver = false;
+  document.getElementById("score").textContent = "0";
+  document.getElementById("level").textContent = "1";
+  document.getElementById("lines").textContent = "0";
+  document.getElementById("game-over").classList.add("hidden");
+  current = newPiece();
+  next = newPiece();
+  drawNext();
+  interval = setInterval(drop, dropTime);
+}
+
+document.addEventListener("keydown", e => {
+  if (gameOver) return;
+  switch (e.key) {
+    case "ArrowLeft": move(-1); break;
+    case "ArrowRight": move(1); break;
+    case "ArrowDown": softDrop(); break;
+    case "ArrowUp": doRotate(); break;
+    case " ": hardDrop(); break;
+    case "p":
+    case "P":
+      paused = !paused;
+      document.getElementById("pause-btn").textContent = paused ? "Resume" : "Pause";
+      break;
+  }
+});
+
+document.getElementById("newgame-btn").onclick = () => {
+  clearInterval(interval);
+  startGame();
+};
+
+document.getElementById("pause-btn").onclick = () => {
+  paused = !paused;
+  document.getElementById("pause-btn").textContent = paused ? "Resume" : "Pause";
+};
+
+startGame();
+
+    </script>
+</body>
+</html>
