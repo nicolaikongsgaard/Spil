@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nicolai's Spil Samling</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1 {
+            color: white;
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
+        }
+
+        .game-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: white;
+            display: block;
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px);
+            background: rgba(255,255,255,0.2);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .game-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .game-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .game-description {
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+
+        .footer {
+            margin-top: 60px;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Nicolai's Spil Samling</h1>
+        <p class="subtitle">Velkommen til min samling af online spil!</p>
+        
+        <div class="games-grid">
+            <a href="KrydsOgBolle.html" class="game-card">
+                <span class="game-icon">⭕</span>
+                <div class="game-title">Kryds og Bolle</div>
+                <div class="game-description">Det klassiske strategispil for to spillere</div>
+            </a>
+
+            <a href="meyer_standalone_game.html" class="game-card">
+                <span class="game-icon">🎲</span>
+                <div class="game-title">Meyer Spil</div>
+                <div class="game-description">Spændende terningespil med bluff og strategi</div>
+            </a>
+
+            <a href="ordspil_game.html" class="game-card">
+                <span class="game-icon">📝</span>
+                <div class="game-title">Ordspil</div>
+                <div class="game-description">Test dit ordforråd og find de rigtige ord</div>
+            </a>
+
+            <a href="rock_paper_scissors.html" class="game-card">
+                <span class="game-icon">✂️</span>
+                <div class="game-title">Sten, Saks, Papir</div>
+                <div class="game-description">Klassisk spil mod computeren</div>
+            </a>
+
+            <a href="tetris_playable.html" class="game-card">
+                <span class="game-icon">🧩</span>
+                <div class="game-title">Tetris</div>
+                <div class="game-description">Det legendariske puslespil med faldende blokke</div>
+            </a>
+
+            <a href="tic_tac_toe_game.html" class="game-card">
+                <span class="game-icon">🎯</span>
+                <div class="game-title">Tic Tac Toe</div>
+                <div class="game-description">Endnu en version af det klassiske kryds og bolle</div>
+            </a>
+        </div>
+
+        <div class="footer">
+            <p>Lavet af Nicolai Kongsgaard • Alle spil er gratis at spille</p>
+        </div>
+    </div>
+</body>
+</html>
